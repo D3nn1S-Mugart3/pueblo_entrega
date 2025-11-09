@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "126109015359",
+    "project_id": "pueblo-entrega-app-dev-f1f94",
+    "storage_bucket": "pueblo-entrega-app-dev-f1f94.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:126109015359:android:6fa10841c1149bb98cc78a",
+        "android_client_info": {
+          "package_name": "com.example.pueblo_entrega_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9m8O-vdQnWGmW7f2iyao4Wl-9dUYsdRc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

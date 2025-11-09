@@ -1,0 +1,104 @@
+# =======================================================
+# Archivo .gitignore COMPLETO para Proyectos Flutter
+# (Ajustado para el subdirectorio pueblo_entrega_app/)
+# =======================================================
+
+# -------------------------------------------------------
+# 1. Archivos y Directorios Generados por Flutter/Dart
+# -------------------------------------------------------
+
+# Archivos de Dart generados en la raíz del proyecto Flutter
+pueblo_entrega_app/.dart_tool/
+pueblo_entrega_app/.packages
+pueblo_entrega_app/.flutter-plugins
+pueblo_entrega_app/.flutter-plugins-dependencies
+pueblo_entrega_app/.main.dart.d
+pueblo_entrega_app/.main.dart.incremental.d
+
+# Salida de la compilación y pruebas
+pueblo_entrega_app/build/
+pueblo_entrega_app/coverage/
+
+# Archivos de Dart generados por herramientas como `build_runner` (freezed, json_serializable, etc.)
+pueblo_entrega_app/*.g.dart
+pueblo_entrega_app/*.freezed.dart
+
+# Directorio de documentación generado por dartdoc
+pueblo_entrega_app/doc/api/
+
+# Cache de pub
+pueblo_entrega_app/.pub-cache/
+pueblo_entrega_app/.pub/
+
+# -------------------------------------------------------
+# 2. Archivos de las Plataformas (Configuración Local)
+# -------------------------------------------------------
+
+# Android
+# CRÍTICO: Contiene la ruta del SDK de Android específica de la máquina.
+pueblo_entrega_app/android/local.properties
+pueblo_entrega_app/android/.gradle
+pueblo_entrega_app/android/app/debug
+pueblo_entrega_app/android/app/profile
+pueblo_entrega_app/android/app/release
+pueblo_entrega_app/android/key.properties
+# Archivos de build temporales
+pueblo_entrega_app/android/captures/
+pueblo_entrega_app/android/bin/
+pueblo_entrega_app/android/gen/
+
+# iOS/macOS
+pueblo_entrega_app/ios/.symlinks/
+pueblo_entrega_app/ios/Flutter/.last_build_id
+pueblo_entrega_app/ios/Flutter/ephemeral/
+pueblo_entrega_app/macos/Flutter/ephemeral/
+
+# Pods (Dependencias de iOS)
+# Se recomienda NO ignorar esta carpeta en aplicaciones, pero aquí está si la necesitas:
+# pueblo_entrega_app/ios/Pods/
+# pueblo_entrega_app/macos/Pods/
+
+# -------------------------------------------------------
+# 3. Archivos de IDEs (Entornos de Desarrollo)
+# (Estos pueden estar en la raíz o en el subdirectorio, se recomienda ignorarlos de forma global)
+# -------------------------------------------------------
+
+# IntelliJ / Android Studio
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Visual Studio Code (VS Code)
+# Si tu configuración de VS Code está dentro de la carpeta Flutter:
+# pueblo_entrega_app/.vscode/
+# Si está en la raíz del repositorio o quieres ignorarla globalmente:
+# .vscode/
+
+# -------------------------------------------------------
+# 4. Archivos Específicos de Sistema Operativo y Varios
+# -------------------------------------------------------
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Logs y misceláneos
+*.log
+*.swp
+*~
+.svn/
+
+# -------------------------------------------------------
+# 5. Firebase / Secretos (Opcional pero recomendado)
+# -------------------------------------------------------
+
+# Archivos de configuración de Firebase dentro del proyecto Flutter
+# pueblo_entrega_app/android/app/google-services.json
+# pueblo_entrega_app/ios/Runner/GoogleService-Info.plist
+
+# Bloqueo de dependencias
+# (Se recomienda NO ignorar en aplicaciones)
+# pueblo_entrega_app/pubspec.lock
