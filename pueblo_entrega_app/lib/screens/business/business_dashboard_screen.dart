@@ -62,15 +62,15 @@ class BusinessDashboardScreen extends StatelessWidget {
                 trailing: IconButton(
                   icon: Icon(Icons.edit),
                   onPressed: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (_) => const BusinessFormScreen(
-                    //       negocioId: negocioId,
-                    //       negocioData: negocio,
-                    //     ),
-                    //   ),
-                    // );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BusinessFormScreen(
+                          negocioId: negocioId,
+                          negocioData: negocio,
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),
