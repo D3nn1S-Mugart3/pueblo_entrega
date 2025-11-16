@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:pueblo_entrega_app/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:pueblo_entrega_app/screens/business/business_dashboard_screen.dart';
-import 'package:pueblo_entrega_app/screens/business_register_screen.dart';
 import 'package:pueblo_entrega_app/screens/auth/login_screen.dart';
 import 'package:pueblo_entrega_app/screens/customer/home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -39,52 +39,61 @@ class PuebloEntregaApp extends StatelessWidget {
         textTheme: Theme.of(context).textTheme.apply(fontFamily: 'Poppins'),
       ),
       debugShowCheckedModeBanner: false,
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-          if (snapshot.hasError) {
-            return const Scaffold(
-              body: Center(
-                child: Text(
-                  'Ocurrió un error al auntenticarse con Firebase. 😥',
-                  style: TextStyle(color: Colors.red),
-                ),
+      home: SplashScreen(),
+    );
+  }
+}
+
+class AuthWrapperScreen extends StatelessWidget {
+  const AuthWrapperScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.hasError) {
+          return const Scaffold(
+            body: Center(
+              child: Text(
+                'Ocurrió un error al auntenticarse con Firebase. 😥',
+                style: TextStyle(color: Colors.red),
               ),
-            );
-          }
+            ),
+          );
+        }
 
-          if (snapshot.hasData) {
-            return FutureBuilder(
-              future: FirebaseFirestore.instance
-                  .collection('usuarios')
-                  .doc(snapshot.data!.uid)
-                  .get(),
-              builder: (context, userSnapshot) {
-                if (!userSnapshot.hasData) {
-                  return const Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                final data = userSnapshot.data!.data();
-                final esNegocio = data?['esNegocio'] ?? false;
+        if (snapshot.hasData) {
+          return FutureBuilder(
+            future: FirebaseFirestore.instance
+                .collection('usuarios')
+                .doc(snapshot.data!.uid)
+                .get(),
+            builder: (context, userSnapshot) {
+              if (!userSnapshot.hasData) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final data = userSnapshot.data!.data();
+              final esNegocio = data?['esNegocio'] ?? false;
 
-                if (esNegocio) {
-                  return const BusinessDashboardScreen();
-                } else {
-                  return const HomeScreen();
-                }
-              },
-            );
-          }
+              if (esNegocio) {
+                return const BusinessDashboardScreen();
+              } else {
+                return const HomeScreen();
+              }
+            },
+          );
+        }
 
-          return const LoginScreen();
-        },
-      ),
+        return const LoginScreen();
+      },
     );
   }
 }

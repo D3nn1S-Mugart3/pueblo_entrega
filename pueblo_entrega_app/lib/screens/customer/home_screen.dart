@@ -23,8 +23,9 @@ class HomeScreen extends StatelessWidget {
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('negocios').snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData)
+          if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
+          }
           var negocios = snapshot.data!.docs;
           return ListView.builder(
             itemCount: negocios.length,
