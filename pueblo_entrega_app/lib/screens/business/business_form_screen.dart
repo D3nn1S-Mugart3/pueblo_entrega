@@ -17,6 +17,15 @@ class _BusinessFormScreenState extends State<BusinessFormScreen> {
   final descCtrl = TextEditingController();
   final addressCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
+  String? category;
+
+  final categories = [
+    "Comida y Bebidas",
+    "Abarrotes",
+    "Ropa y Accesorios",
+    "Servicios",
+    "Otros",
+  ];
 
   @override
   void initState() {
@@ -26,16 +35,25 @@ class _BusinessFormScreenState extends State<BusinessFormScreen> {
       descCtrl.text = widget.negocioData!['descripcion'] ?? '';
       addressCtrl.text = widget.negocioData!['direccion'] ?? '';
       phoneCtrl.text = widget.negocioData!['telefono'] ?? '';
+      category = widget.negocioData!['categoria'];
     }
   }
 
   Future<void> saveBusiness() async {
+    if (nameCtrl.text.isEmpty || addressCtrl.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Nombre y dirección son obligatorios")),
+      );
+      return;
+    }
+
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final data = {
       'nombre': nameCtrl.text.trim(),
       'descripcion': descCtrl.text.trim(),
       'direccion': addressCtrl.text.trim(),
       'telefono': phoneCtrl.text.trim(),
+      'categoria': category ?? 'Otros',
       'propietario': uid,
       'fechaRegistro': DateTime.now(),
     };
@@ -49,14 +67,18 @@ class _BusinessFormScreenState extends State<BusinessFormScreen> {
           .update(data);
     }
 
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Negocio guardado correctamente")),
+    );
+
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Datos del negoecio")),
-      body: Padding(
+      appBar: AppBar(title: const Text("Datos del negocio")),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
@@ -77,6 +99,15 @@ class _BusinessFormScreenState extends State<BusinessFormScreen> {
             TextField(
               controller: phoneCtrl,
               decoration: const InputDecoration(labelText: "Telefono"),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: category,
+              hint: const Text("Selecciona una categoria"),
+              items: categories
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .toList(),
+              onChanged: (v) => setState(() => category = v),
             ),
             const SizedBox(height: 24),
             ElevatedButton(

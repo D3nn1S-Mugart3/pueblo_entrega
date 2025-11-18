@@ -21,11 +21,9 @@ class _LoginScreenState extends State<LoginScreen> {
         password: passCtrl.text.trim(),
       );
 
-      // Si el inicio de sesión es exitoso, el StreamBuilder en main.dart manejará la navegación.
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+      // 🔥 No navegues manualmente.
+      // El StreamBuilder en main.dart ya detectará el login
+      // y enviará a BusinessDashboardScreen o HomeScreen.
     } catch (e) {
       ScaffoldMessenger.of(
         context,

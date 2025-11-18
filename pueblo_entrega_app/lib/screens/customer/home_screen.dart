@@ -9,24 +9,29 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser!;
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Negocios locales"),
         actions: [
           IconButton(
-            icon: const Icon(Icons.exit_to_app),
+            icon: const Icon(Icons.logout),
             onPressed: () => FirebaseAuth.instance.signOut(),
           ),
         ],
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('negocios').snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+        builder: (context, snap) {
+          if (!snap.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
-          var negocios = snapshot.data!.docs;
+          var negocios = snap.data!.docs;
           return ListView.builder(
             itemCount: negocios.length,
             itemBuilder: (context, i) {
@@ -41,13 +46,38 @@ class HomeScreen extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const BusinessDashboardScreen()),
-        ),
-        label: const Text("Registrar negocio"),
-        icon: const Icon(Icons.store),
+      floatingActionButton: FutureBuilder(
+        future: FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(user.uid)
+            .get(),
+        builder: (context, snap) {
+          if (!snap.hasData) return SizedBox();
+
+          // Validacion obligatoria si existe o no algun negocio
+          if (!snap.data!.exists) return const SizedBox();
+
+          final data = snap.data!.data();
+
+          // Evitar crasheo si el campo no existe
+          final bool esNegocio = data?['esNegocio'] ?? false;
+
+          // Ocultar para clientes normales
+          if (!esNegocio) return SizedBox();
+
+          return FloatingActionButton.extended(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const BusinessDashboardScreen(),
+                ),
+              );
+            },
+            label: const Text("Registrar negocio"),
+            icon: const Icon(Icons.store),
+          );
+        },
       ),
     );
   }

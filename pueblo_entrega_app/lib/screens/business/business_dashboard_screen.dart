@@ -13,7 +13,7 @@ class BusinessDashboardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Mi negocio"),
+        title: const Text("Gestión de mi negocio"),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -50,83 +50,196 @@ class BusinessDashboardScreen extends StatelessWidget {
             );
           }
 
-          final negocio = negocios.first.data();
-          final negocioId = snapshot.data!.docs.first.id;
+          final negocioDoc = negocios.first;
+          final negocioId = negocioDoc.id;
+          final negocio = negocioDoc.data();
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ListTile(
-                title: Text(negocio['nombre'] ?? ''),
-                subtitle: Text(negocio['descripcion'] ?? ''),
-                trailing: IconButton(
-                  icon: Icon(Icons.edit),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BusinessFormScreen(
-                          negocioId: negocioId,
-                          negocioData: negocio,
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    negocio['nombre'] ?? '',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(negocio['descripcion'] ?? ''),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BusinessFormScreen(
+                            negocioId: negocioId,
+                            negocioData: negocio,
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-              const Padding(
-                padding: EdgeInsetsGeometry.all(16),
-                child: Text(
-                  "Productos",
+                const SizedBox(height: 10),
+                const Text(
+                  "Productos del negocio",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-              ),
-              Expanded(
-                child: StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection('productos')
-                      .where('negocioId', isEqualTo: negocioId)
-                      .snapshots(),
-                  builder: (context, prodSnapshot) {
-                    if (!prodSnapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+                Expanded(
+                  child: StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('productos')
+                        .where('negocioId', isEqualTo: negocioId)
+                        .snapshots(),
+                    builder: (context, prodSnapshot) {
+                      if (!prodSnapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-                    final productos = prodSnapshot.data!.docs;
+                      final productos = prodSnapshot.data!.docs;
 
-                    if (productos.isEmpty) {
-                      return const Center(
-                        child: Text("Aún no hay productos registrados"),
-                      );
-                    }
-
-                    return ListView.builder(
-                      itemCount: productos.length,
-                      itemBuilder: (context, i) {
-                        final p = productos[i].data();
-                        return Card(
-                          child: ListTile(
-                            title: Text(p['nombre']),
-                            subtitle: Text("\$${p['precio']}"),
+                      if (productos.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            "Aún no hay productos registrados",
+                            style: TextStyle(color: Colors.grey),
                           ),
                         );
-                      },
-                    );
-                  },
+                      }
+
+                      return ListView.builder(
+                        itemCount: productos.length,
+                        itemBuilder: (context, i) {
+                          final doc = productos[i];
+                          final p = doc.data();
+                          return Card(
+                            child: ListTile(
+                              title: Text(p['nombre'] ?? ''),
+                              subtitle: Text(p['descripcion'] ?? ''),
+                              trailing: PopupMenuButton<String>(
+                                onSelected: (value) async {
+                                  if (value == 'edit') {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ProductFormScreen(
+                                          productoId: doc.id,
+                                          productoData: p,
+                                        ),
+                                      ),
+                                    );
+                                  } else if (value == 'delete') {
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (_) => AlertDialog(
+                                        title: const Text(
+                                          "¿Eliminar producto?",
+                                        ),
+                                        content: Text(
+                                          "¿Seguro que deseas eliminar \"${p['nombre']}\"?\n"
+                                          "Esta acción no se puede deshacer.",
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            child: const Text("Cancelar"),
+                                            onPressed: () =>
+                                                Navigator.pop(context, false),
+                                          ),
+                                          TextButton(
+                                            child: const Text(
+                                              "Eliminar",
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirm == true) {
+                                      await FirebaseFirestore.instance
+                                          .collection('productos')
+                                          .doc(doc.id)
+                                          .delete();
+
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("Producto eliminado"),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                itemBuilder: (context) => const [
+                                  PopupMenuItem(
+                                    value: 'edit',
+                                    child: Text("Editar"),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'delete',
+                                    child: Text(
+                                      "Eliminar",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              onTap: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ProductFormScreen(
+                                      productoId: doc.id,
+                                      productoData: p,
+                                    ),
+                                  ),
+                                );
+                                if (result == true) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        "Producto actualizado correctamente",
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
+
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add),
         label: const Text("Agregar producto"),
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const ProductFormScreen()),
           );
+
+          if (result == true) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Producto guardado correctamente")),
+            );
+          }
         },
       ),
     );
