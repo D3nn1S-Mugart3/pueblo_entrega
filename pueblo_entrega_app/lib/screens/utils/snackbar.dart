@@ -1,82 +1,87 @@
 import 'package:flutter/material.dart';
 
-void showSuccessSnackBar(BuildContext context, String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      backgroundColor: Colors.green.shade600,
-      behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      content: Row(
-        children: [
-          const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              message,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-      duration: Duration(seconds: 2),
-    ),
-  );
-}
+enum SnackType { success, error, warning, info }
 
-void showUpdatedSnackBar(BuildContext context, String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      backgroundColor: Colors.amber.shade700,
-      behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      content: Row(
-        children: [
-          const Icon(Icons.edit_outlined, color: Colors.white),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              message,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-      duration: Duration(seconds: 2),
-    ),
-  );
-}
+void showAppSnackBar(
+  BuildContext context, {
+  required String message,
+  SnackType type = SnackType.success,
+}) {
+  Color bgColor;
+  IconData icon;
 
-void showErrorSnackBar(BuildContext context, String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      backgroundColor: Colors.red.shade600,
-      behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      content: Row(
+  switch (type) {
+    case SnackType.success:
+      bgColor = Colors.green.shade600;
+      icon = Icons.check_circle_outline_rounded;
+      break;
+
+    case SnackType.error:
+      bgColor = Colors.red.shade600;
+      icon = Icons.error_outline_rounded;
+      break;
+
+    case SnackType.warning:
+      bgColor = Colors.amber.shade700;
+      icon = Icons.warning_amber_rounded;
+      break;
+
+    case SnackType.info:
+      bgColor = Colors.blue.shade600;
+      icon = Icons.info_outline_rounded;
+
+    default:
+      bgColor = Colors.grey.shade800;
+      icon = Icons.notifications_none;
+  }
+
+  final snackBar = SnackBar(
+    elevation: 10,
+    backgroundColor: Colors.transparent,
+    behavior: SnackBarBehavior.floating,
+    margin: const EdgeInsets.all(16),
+    duration: const Duration(seconds: 2),
+    animation: CurvedAnimation(
+      parent: AnimationController(
+        vsync: ScaffoldMessenger.of(context),
+        duration: const Duration(milliseconds: 300),
+      ),
+      curve: Curves.easeOutBack,
+    ),
+    content: Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: bgColor.withOpacity(0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
         children: [
-          const Icon(Icons.error_outline_rounded, color: Colors.white),
+          Icon(icon, color: Colors.white, size: 26),
           const SizedBox(width: 12),
+
           Expanded(
             child: Text(
               message,
               style: const TextStyle(
                 color: Colors.white,
-                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
         ],
       ),
-      duration: Duration(seconds: 2),
     ),
   );
+
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(snackBar);
 }

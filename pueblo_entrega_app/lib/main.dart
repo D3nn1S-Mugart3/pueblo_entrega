@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:pueblo_entrega_app/screens/utils/app_loader.dart';
 import 'package:pueblo_entrega_app/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:pueblo_entrega_app/screens/business/business_dashboard_screen.dart';
@@ -76,9 +77,7 @@ class AuthWrapperScreen extends StatelessWidget {
                 .get(),
             builder: (context, userSnapshot) {
               if (!userSnapshot.hasData) {
-                return const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
-                );
+                return Scaffold(body: appLoaderWidget(text: "Cargando..."));
               }
               final data = userSnapshot.data!.data();
               final esNegocio = data?['esNegocio'] ?? false;

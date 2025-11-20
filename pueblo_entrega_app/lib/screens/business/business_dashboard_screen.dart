@@ -5,8 +5,17 @@ import 'package:pueblo_entrega_app/screens/business/business_form_screen.dart';
 import 'package:pueblo_entrega_app/screens/business/product_form_screen.dart';
 import 'package:pueblo_entrega_app/screens/utils/snackbar.dart';
 
-class BusinessDashboardScreen extends StatelessWidget {
+class BusinessDashboardScreen extends StatefulWidget {
   const BusinessDashboardScreen({super.key});
+
+  @override
+  State<BusinessDashboardScreen> createState() =>
+      _BusinessDashboardScreenState();
+}
+
+class _BusinessDashboardScreenState extends State<BusinessDashboardScreen> {
+  // Para evitar repeticiones de SnackBar
+  bool infoShown = false;
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +107,18 @@ class BusinessDashboardScreen extends StatelessWidget {
                         .snapshots(),
                     builder: (context, prodSnapshot) {
                       if (!prodSnapshot.hasData) {
+                        if (!infoShown) {
+                          infoShown = true;
+
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            showAppSnackBar(
+                              context,
+                              message: "Cargando productos...",
+                              type: SnackType.info,
+                            );
+                          });
+                        }
+
                         return const Center(child: CircularProgressIndicator());
                       }
 
@@ -170,9 +191,15 @@ class BusinessDashboardScreen extends StatelessWidget {
                                           .doc(doc.id)
                                           .delete();
 
-                                      showErrorSnackBar(
+                                      // showErrorSnackBar(
+                                      //   context,
+                                      //   "Producto eliminado con éxito",
+                                      // );
+
+                                      showAppSnackBar(
                                         context,
-                                        "Producto eliminado con éxito",
+                                        message: "Producto eliminado con éxito",
+                                        type: SnackType.error,
                                       );
                                     }
                                   }
@@ -202,9 +229,15 @@ class BusinessDashboardScreen extends StatelessWidget {
                                   ),
                                 );
                                 if (result == true) {
-                                  showUpdatedSnackBar(
+                                  // showUpdatedSnackBar(
+                                  //   context,
+                                  //   "Producto actualizado correctamente",
+                                  // );
+                                  showAppSnackBar(
                                     context,
-                                    "Producto actualizado correctamente",
+                                    message:
+                                        "Producto actualizado correctamente",
+                                    type: SnackType.warning,
                                   );
                                 }
                               },
@@ -231,7 +264,12 @@ class BusinessDashboardScreen extends StatelessWidget {
           );
 
           if (result == true) {
-            showSuccessSnackBar(context, "Producto guardado exitosamente");
+            // showSuccessSnackBar(context, "Producto guardado exitosamente");
+            showAppSnackBar(
+              context,
+              message: "Producto guardado exitosamente",
+              type: SnackType.success,
+            );
           }
         },
       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pueblo_entrega_app/screens/utils/app_loader.dart';
+import 'package:pueblo_entrega_app/screens/utils/snackbar.dart';
 
 class BusinessRegisterScreen extends StatefulWidget {
   const BusinessRegisterScreen({super.key});
@@ -15,6 +17,8 @@ class _BusinessRegisterScreenState extends State<BusinessRegisterScreen> {
   final descCtrl = TextEditingController();
 
   Future<void> saveBusiness() async {
+    showAppLoader(context, text: "Registrando negocio...");
+
     final uid = FirebaseAuth.instance.currentUser!.uid;
     await FirebaseFirestore.instance.collection('negocios').add({
       'nombre': nameCtrl.text.trim(),
@@ -23,7 +27,16 @@ class _BusinessRegisterScreenState extends State<BusinessRegisterScreen> {
       'propietario': uid,
       'fechaRegistro': DateTime.now(),
     });
-    Navigator.pop(context);
+
+    if (!context.mounted) return;
+    hideAppLoader(context);
+
+    // showAppSnackBar(
+    //   context,
+    //   message: "Negocio registrado correctamente",
+    //   type: SnackType.success,
+    // );
+    Navigator.pop(context, true);
   }
 
   @override

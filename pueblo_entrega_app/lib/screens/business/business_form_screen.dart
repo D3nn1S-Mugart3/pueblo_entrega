@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pueblo_entrega_app/screens/utils/app_loader.dart';
+import 'package:pueblo_entrega_app/screens/utils/snackbar.dart';
 
 class BusinessFormScreen extends StatefulWidget {
   final String? negocioId;
@@ -41,11 +43,18 @@ class _BusinessFormScreenState extends State<BusinessFormScreen> {
 
   Future<void> saveBusiness() async {
     if (nameCtrl.text.isEmpty || addressCtrl.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Nombre y dirección son obligatorios")),
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text("Nombre y dirección son obligatorios")),
+      // );
+      showAppSnackBar(
+        context,
+        message: "Nombre y dirección son obligatorios",
+        type: SnackType.error,
       );
       return;
     }
+
+    showAppLoader(context, text: "Guardando negocio...");
 
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final data = {
@@ -67,11 +76,20 @@ class _BusinessFormScreenState extends State<BusinessFormScreen> {
           .update(data);
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Negocio guardado correctamente")),
-    );
+    if (!context.mounted) return;
+    hideAppLoader(context);
 
-    Navigator.pop(context);
+    // showAppSnackBar(
+    //   context,
+    //   message: "Negocio guardado correctamente",
+    //   type: SnackType.success,
+    // );
+
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   const SnackBar(content: Text("Negocio guardado correctamente")),
+    // );
+
+    Navigator.pop(context, true);
   }
 
   @override
