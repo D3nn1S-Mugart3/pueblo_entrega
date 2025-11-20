@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pueblo_entrega_app/screens/business/business_form_screen.dart';
 import 'package:pueblo_entrega_app/screens/business/product_form_screen.dart';
+import 'package:pueblo_entrega_app/screens/utils/snackbar.dart';
 
 class BusinessDashboardScreen extends StatelessWidget {
   const BusinessDashboardScreen({super.key});
@@ -169,12 +170,9 @@ class BusinessDashboardScreen extends StatelessWidget {
                                           .doc(doc.id)
                                           .delete();
 
-                                      ScaffoldMessenger.of(
+                                      showErrorSnackBar(
                                         context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text("Producto eliminado"),
-                                        ),
+                                        "Producto eliminado con éxito",
                                       );
                                     }
                                   }
@@ -204,12 +202,9 @@ class BusinessDashboardScreen extends StatelessWidget {
                                   ),
                                 );
                                 if (result == true) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        "Producto actualizado correctamente",
-                                      ),
-                                    ),
+                                  showUpdatedSnackBar(
+                                    context,
+                                    "Producto actualizado correctamente",
                                   );
                                 }
                               },
@@ -236,9 +231,7 @@ class BusinessDashboardScreen extends StatelessWidget {
           );
 
           if (result == true) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Producto guardado correctamente")),
-            );
+            showSuccessSnackBar(context, "Producto guardado exitosamente");
           }
         },
       ),
