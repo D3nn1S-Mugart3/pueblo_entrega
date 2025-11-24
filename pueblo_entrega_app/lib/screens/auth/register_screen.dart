@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pueblo_entrega_app/screens/business_register_screen.dart';
 import 'package:pueblo_entrega_app/screens/customer/home_screen.dart';
+import 'package:pueblo_entrega_app/screens/utils/snackbar.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -17,7 +18,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final passCtrl = TextEditingController();
   bool isBusiness = false;
 
+  bool loading = false;
+
   Future<void> register() async {
+    if (nameCtrl.text.isEmpty ||
+        emailCtrl.text.isEmpty ||
+        passCtrl.text.isEmpty) {
+      showAppSnackBar(
+        context,
+        message: "Todos los campos son obligatorios.",
+        type: SnackType.error,
+      );
+      return;
+    }
+
+    setState(() => loading = true);
+
     try {
       UserCredential user = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
@@ -52,51 +68,131 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
+      showAppSnackBar(
         context,
-      ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+        message: "Error: ${e.toString().replaceAll("Exception", "")}",
+        type: SnackType.error,
+      );
+    } finally {
+      setState(() => loading = true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Crear cuenta")),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(labelText: "Nombre"),
-            ),
-            TextField(
-              controller: emailCtrl,
-              decoration: const InputDecoration(labelText: "Correo"),
-            ),
-            TextField(
-              controller: passCtrl,
-              decoration: const InputDecoration(labelText: "Contraseña"),
-              obscureText: true,
-            ),
-            Row(
-              children: [
-                Checkbox(
-                  value: isBusiness,
-                  onChanged: (v) => setState(() => isBusiness = v!),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.black87),
+        title: Text(
+          "Crear cuenta",
+          style: TextStyle(
+            color: Colors.green[800],
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            fontFamily: "Poppins",
+          ),
+        ),
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "Poppins",
+                    ),
+                    children: [
+                      TextSpan(
+                        text: "Pueblo ",
+                        style: TextStyle(color: Colors.green[800]),
+                      ),
+                      TextSpan(
+                        text: "Entrega",
+                        style: TextStyle(color: Colors.orange[700]),
+                      ),
+                    ],
+                  ),
                 ),
-                const Text("Soy dueño de un negocio"),
-              ],
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: register,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
               ),
-              child: const Text("Registrar"),
-            ),
-          ],
+              const SizedBox(height: 30),
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(
+                  labelText: "Nombre completo",
+                  prefixIcon: Icon(Icons.person_2_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              TextField(
+                controller: emailCtrl,
+                decoration: InputDecoration(
+                  labelText: "Correo electrónico",
+                  prefixIcon: Icon(Icons.email_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              TextField(
+                controller: passCtrl,
+                decoration: InputDecoration(
+                  labelText: "Contraseña",
+                  prefixIcon: Icon(Icons.lock_outline),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Checkbox(
+                    value: isBusiness,
+                    activeColor: Colors.green[800],
+                    onChanged: (v) => setState(() => isBusiness = v!),
+                  ),
+                  const Text(
+                    "Soy dueño de un negocio",
+                    style: TextStyle(fontSize: 15),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: loading ? null : register,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green[800],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: loading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          "Crear cuenta",
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
