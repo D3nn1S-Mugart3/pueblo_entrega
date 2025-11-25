@@ -30,6 +30,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool hasLowercase = false;
   bool hasNumber = false;
   bool hasMinLength = false;
+  bool hasSpecialChar = false;
+  double passwordStrength = 0.0;
+  String strengthLabel = "Débil";
+  Color strengthColor = Colors.red;
+
   bool emailValid = false;
 
   bool isValidEmail(String email) {
@@ -59,9 +64,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
       hasLowercase = pass.contains(RegExp(r'[a-z]'));
       hasNumber = pass.contains(RegExp(r'[0-9]'));
       hasMinLength = pass.length >= 8;
+      hasSpecialChar = pass.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
 
       passwordValid = hasUppercase && hasLowercase && hasNumber && hasMinLength;
       passwordsMatch = pass == confirm;
+
+      // Calculo de fortaleza
+      passwordStrength = 0;
+      if (hasMinLength) passwordStrength += 0.25;
+      if (hasUppercase) passwordStrength += 0.25;
+      if (hasNumber) passwordStrength += 0.25;
+      if (hasSpecialChar) passwordStrength += 0.25;
+
+      if (passwordStrength <= 0.25) {
+        strengthLabel = "Débil";
+        strengthColor = Colors.red;
+      } else if (passwordStrength <= 0.75) {
+        strengthLabel = "Media";
+        strengthColor = Colors.orange;
+      } else {
+        strengthLabel = "Fuerte";
+        strengthColor = Colors.green;
+      }
     });
   }
 
@@ -282,6 +306,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 4),
+              Row(
+                children: [
+                  const Text(
+                    "Fortaleza:",
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(width: 6),
+                  Tooltip(
+                    message:
+                        "Usa mayúsculas, minúsculas, números y opcionalmente un carácter especial.",
+                    child: Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    strengthLabel,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: strengthColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadiusGeometry.circular(10),
+                child: LinearProgressIndicator(
+                  value: passwordStrength,
+                  minHeight: 8,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(strengthColor),
+                ),
+              ),
+              const SizedBox(height: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -289,6 +350,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   _buildRequirement("Una letra mayúscula", hasUppercase),
                   _buildRequirement("Una letra minúscula", hasLowercase),
                   _buildRequirement("Un número", hasNumber),
+                  _buildRequirement("Carácter especial", hasSpecialChar),
                 ],
               ),
               const SizedBox(height: 18),
