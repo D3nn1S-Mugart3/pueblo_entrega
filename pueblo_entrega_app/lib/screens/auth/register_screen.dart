@@ -16,9 +16,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final nameCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
-  bool isBusiness = false;
+  final confirmPassCtrl = TextEditingController();
 
+  bool isBusiness = false;
   bool loading = false;
+  bool obscurePassword = true;
+  bool obscureConfirmPassword = true;
+
+  bool passwordValid = false;
+  bool passwordsMatch = false;
+
+  void validatePassword() {
+    final pass = passCtrl.text;
+    final confirm = confirmPassCtrl.text;
+
+    final hasMinLength = pass.length >= 6;
+    final hasLetter = RegExp(r'[a-zA-Z]').hasMatch(pass);
+
+    setState(() {
+      passwordValid = hasMinLength && hasLetter;
+      passwordsMatch = pass == confirm;
+    });
+  }
 
   Future<void> register() async {
     if (nameCtrl.text.isEmpty ||
@@ -27,6 +46,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
       showAppSnackBar(
         context,
         message: "Todos los campos son obligatorios.",
+        type: SnackType.error,
+      );
+      return;
+    }
+
+    if (passCtrl.text != confirmPassCtrl.text) {
+      showAppSnackBar(
+        context,
+        message: "Las contraseñas no coinciden",
+        type: SnackType.error,
+      );
+      return;
+    }
+
+    if (!passwordValid) {
+      showAppSnackBar(
+        context,
+        message: "La contraseña no cumple los requisitos",
         type: SnackType.error,
       );
       return;
@@ -74,8 +111,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
         type: SnackType.error,
       );
     } finally {
-      setState(() => loading = true);
+      setState(() => loading = false);
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    passCtrl.addListener(validatePassword);
+    confirmPassCtrl.addListener(validatePassword);
+  }
+
+  @override
+  void dispose() {
+    passCtrl.dispose();
+    confirmPassCtrl.dispose();
+    nameCtrl.dispose();
+    emailCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -148,15 +201,72 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 18),
               TextField(
                 controller: passCtrl,
+                obscureText: obscurePassword,
                 decoration: InputDecoration(
                   labelText: "Contraseña",
                   prefixIcon: Icon(Icons.lock_outline),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        obscurePassword = !obscurePassword;
+                      });
+                    },
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                obscureText: true,
               ),
+              Text(
+                passwordValid
+                    ? "Contraseña válida"
+                    : "Mínimo 6 caracteres y al menos una letra",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: passwordValid ? Colors.green : Colors.grey,
+                ),
+              ),
+
+              const SizedBox(height: 18),
+              TextField(
+                controller: confirmPassCtrl,
+                obscureText: obscureConfirmPassword,
+                decoration: InputDecoration(
+                  labelText: "Confirmar contraseña",
+                  prefixIcon: Icon(Icons.lock_outline),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscureConfirmPassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        obscureConfirmPassword = !obscureConfirmPassword;
+                      });
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              if (confirmPassCtrl.text.isNotEmpty)
+                Text(
+                  passwordsMatch
+                      ? "Las contraseñas coinciden"
+                      : "Las contraseñas no coinciden",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: passwordsMatch ? Colors.green : Colors.red,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               const SizedBox(height: 12),
               Row(
                 children: [

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pueblo_entrega_app/screens/utils/app_loader.dart';
-import 'package:pueblo_entrega_app/screens/utils/snackbar.dart';
 
 class BusinessRegisterScreen extends StatefulWidget {
   const BusinessRegisterScreen({super.key});

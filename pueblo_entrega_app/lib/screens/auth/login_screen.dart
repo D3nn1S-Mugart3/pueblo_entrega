@@ -14,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
   bool loading = false;
+  bool obscurePassword = true;
 
   Future<void> login() async {
     setState(() => loading = true);
@@ -92,14 +93,26 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 18),
               TextField(
                 controller: passCtrl,
+                obscureText: obscurePassword,
                 decoration: InputDecoration(
                   labelText: "Contraseña",
                   prefixIcon: Icon(Icons.lock_outline),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        obscurePassword = !obscurePassword;
+                      });
+                    },
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                obscureText: true,
               ),
               const SizedBox(height: 28),
 
