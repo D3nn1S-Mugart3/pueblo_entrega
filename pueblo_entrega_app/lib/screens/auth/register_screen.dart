@@ -26,15 +26,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool passwordValid = false;
   bool passwordsMatch = false;
 
+  bool hasUppercase = false;
+  bool hasLowercase = false;
+  bool hasNumber = false;
+  bool hasMinLength = false;
+  bool emailValid = false;
+
+  bool isValidEmail(String email) {
+    final emailRegex = RegExp(
+      r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+    );
+    return emailRegex.hasMatch(email);
+  }
+
+  // Validación de Email
+  void validateEmail() {
+    final email = emailCtrl.text.trim();
+
+    setState(() {
+      emailValid = isValidEmail(email);
+    });
+  }
+
+  // Validación de contraseña
   void validatePassword() {
     final pass = passCtrl.text;
     final confirm = confirmPassCtrl.text;
 
-    final hasMinLength = pass.length >= 6;
-    final hasLetter = RegExp(r'[a-zA-Z]').hasMatch(pass);
-
+    // Validación avanzada para la creación de contraseña
     setState(() {
-      passwordValid = hasMinLength && hasLetter;
+      hasUppercase = pass.contains(RegExp(r'[A-Z]'));
+      hasLowercase = pass.contains(RegExp(r'[a-z]'));
+      hasNumber = pass.contains(RegExp(r'[0-9]'));
+      hasMinLength = pass.length >= 8;
+
+      passwordValid = hasUppercase && hasLowercase && hasNumber && hasMinLength;
       passwordsMatch = pass == confirm;
     });
   }
@@ -51,10 +77,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (passCtrl.text != confirmPassCtrl.text) {
+    if (!emailValid) {
       showAppSnackBar(
         context,
-        message: "Las contraseñas no coinciden",
+        message: "Ingresa un correo válido",
         type: SnackType.error,
       );
       return;
@@ -64,6 +90,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       showAppSnackBar(
         context,
         message: "La contraseña no cumple los requisitos",
+        type: SnackType.error,
+      );
+      return;
+    }
+
+    if (passCtrl.text != confirmPassCtrl.text) {
+      showAppSnackBar(
+        context,
+        message: "Las contraseñas no coinciden",
         type: SnackType.error,
       );
       return;
@@ -120,6 +155,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.initState();
     passCtrl.addListener(validatePassword);
     confirmPassCtrl.addListener(validatePassword);
+    emailCtrl.addListener(validateEmail);
   }
 
   @override
@@ -198,6 +234,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 4),
+              if (emailCtrl.text.isNotEmpty)
+                Row(
+                  children: [
+                    const SizedBox(width: 8),
+                    Icon(
+                      emailValid ? Icons.check_circle_sharp : Icons.error_sharp,
+                      color: emailValid ? Colors.green : Colors.red,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      emailValid
+                          ? "Correo válido"
+                          : "Correo electrónico inválido",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: emailValid ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               const SizedBox(height: 18),
               TextField(
                 controller: passCtrl,
@@ -222,16 +281,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
               ),
-              Text(
-                passwordValid
-                    ? "Contraseña válida"
-                    : "Mínimo 6 caracteres y al menos una letra",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: passwordValid ? Colors.green : Colors.grey,
-                ),
+              const SizedBox(height: 4),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildRequirement("Mínimo 8 caracteres", hasMinLength),
+                  _buildRequirement("Una letra mayúscula", hasUppercase),
+                  _buildRequirement("Una letra minúscula", hasLowercase),
+                  _buildRequirement("Un número", hasNumber),
+                ],
               ),
-
               const SizedBox(height: 18),
               TextField(
                 controller: confirmPassCtrl,
@@ -256,16 +315,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 4),
               if (confirmPassCtrl.text.isNotEmpty)
-                Text(
-                  passwordsMatch
-                      ? "Las contraseñas coinciden"
-                      : "Las contraseñas no coinciden",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: passwordsMatch ? Colors.green : Colors.red,
-                    fontWeight: FontWeight.w500,
-                  ),
+                Row(
+                  children: [
+                    SizedBox(width: 8),
+                    Icon(
+                      passwordsMatch
+                          ? Icons.check_circle_sharp
+                          : Icons.error_sharp,
+                      color: passwordsMatch ? Colors.green : Colors.red,
+                      size: 18,
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      passwordsMatch
+                          ? "Las contraseñas coinciden"
+                          : "Las contraseñas no coinciden",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: passwordsMatch ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               const SizedBox(height: 12),
               Row(
@@ -307,4 +380,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
+}
+
+Widget _buildRequirement(String text, bool valid) {
+  return Row(
+    children: [
+      const SizedBox(width: 8),
+      Icon(
+        valid ? Icons.check_circle_sharp : Icons.cancel_sharp,
+        color: valid ? Colors.green : Colors.red,
+        size: 18,
+      ),
+      const SizedBox(width: 6),
+      Text(
+        text,
+        style: TextStyle(
+          color: valid ? Colors.green : Colors.red,
+          fontSize: 13,
+        ),
+      ),
+    ],
+  );
 }
