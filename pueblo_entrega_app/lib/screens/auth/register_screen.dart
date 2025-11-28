@@ -33,7 +33,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool hasSpecialChar = false;
   double passwordStrength = 0.0;
   String strengthLabel = "Débil";
-  Color strengthColor = Colors.red;
+  Color strengthColor = Colors.grey;
+
+  int _currentStrengthLevel = 0;
 
   bool emailValid = false;
 
@@ -70,23 +72,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
       passwordsMatch = pass == confirm;
 
       // Calculo de fortaleza
-      passwordStrength = 0;
-      if (hasMinLength) passwordStrength += 0.25;
-      if (hasUppercase) passwordStrength += 0.25;
-      if (hasNumber) passwordStrength += 0.25;
-      if (hasSpecialChar) passwordStrength += 0.25;
+      int checksPassed = 0;
+      if (hasMinLength) checksPassed++;
+      if (hasUppercase) checksPassed++;
+      if (hasNumber) checksPassed++;
+      if (hasSpecialChar) checksPassed++;
 
-      if (passwordStrength <= 0.25) {
+      if (hasLowercase) checksPassed++;
+
+      // 3. Asignar nivel (0 a 3) y colores basado en los checks cumplidos
+      if (pass.isEmpty) {
+        _currentStrengthLevel = 0;
+        strengthLabel = "Vacío";
+        strengthColor = Colors.grey;
+      } else if (checksPassed < 3) {
+        _currentStrengthLevel = 1;
         strengthLabel = "Débil";
         strengthColor = Colors.red;
-      } else if (passwordStrength <= 0.75) {
+      } else if (checksPassed < 5) {
+        _currentStrengthLevel = 2;
         strengthLabel = "Media";
         strengthColor = Colors.orange;
       } else {
+        _currentStrengthLevel = 3;
         strengthLabel = "Fuerte";
         strengthColor = Colors.green;
       }
     });
+  }
+
+  // --- WIDGET PARA CADA SEGMENTO DE LA BARRA ---
+  Widget buildSegment(int step) {
+    // Si el nivel actual es mayor o igual al paso de este segmento, se llena (1.0)
+    final double value = _currentStrengthLevel >= step ? 1.0 : 0.0;
+
+    return Expanded(
+      child: LinearProgressIndicator(
+        value: value,
+        minHeight: 8,
+        backgroundColor: Colors.grey[200],
+        // Usamos AlwaysStoppedAnimation para que el color sea sólido
+        valueColor: AlwaysStoppedAnimation<Color>(strengthColor),
+        borderRadius: BorderRadius.circular(4),
+      ),
+    );
   }
 
   Future<void> register() async {
@@ -306,53 +335,61 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              Row(
-                children: [
-                  const Text(
-                    "Fortaleza:",
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(width: 6),
-                  Tooltip(
-                    message:
-                        "Usa mayúsculas, minúsculas, números y opcionalmente un carácter especial.",
-                    child: Icon(
-                      Icons.info_outline,
-                      size: 16,
-                      color: Colors.grey[700],
+              if (passCtrl.text.isNotEmpty)
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Text(
+                          "Fortaleza:",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Tooltip(
+                          message:
+                              "Usa mayúsculas, minúsculas, números y opcionalmente un carácter especial.",
+                          child: Icon(
+                            Icons.info_outline,
+                            size: 16,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          strengthLabel,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: strengthColor,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    strengthLabel,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: strengthColor,
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        buildSegment(1),
+                        const SizedBox(width: 4),
+                        buildSegment(2),
+                        const SizedBox(width: 4),
+                        buildSegment(3),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              ClipRRect(
-                borderRadius: BorderRadiusGeometry.circular(10),
-                child: LinearProgressIndicator(
-                  value: passwordStrength,
-                  minHeight: 8,
-                  backgroundColor: Colors.grey[300],
-                  valueColor: AlwaysStoppedAnimation<Color>(strengthColor),
+                    const SizedBox(height: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildRequirement("Mínimo 8 caracteres", hasMinLength),
+                        _buildRequirement("Una letra mayúscula", hasUppercase),
+                        _buildRequirement("Una letra minúscula", hasLowercase),
+                        _buildRequirement("Un número", hasNumber),
+                        _buildRequirement("Carácter especial", hasSpecialChar),
+                      ],
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildRequirement("Mínimo 8 caracteres", hasMinLength),
-                  _buildRequirement("Una letra mayúscula", hasUppercase),
-                  _buildRequirement("Una letra minúscula", hasLowercase),
-                  _buildRequirement("Un número", hasNumber),
-                  _buildRequirement("Carácter especial", hasSpecialChar),
-                ],
-              ),
               const SizedBox(height: 18),
               TextField(
                 controller: confirmPassCtrl,
